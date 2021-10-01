@@ -1,0 +1,5 @@
+WHITE = (255, 255, 255)
+BLACK = (0,0,0)
+
+# GAME SPECIFIC
+GREY = (36, 36, 40)
