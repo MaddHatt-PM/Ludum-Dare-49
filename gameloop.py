@@ -17,7 +17,7 @@ pygame.init()
 # WINDOW SETUP
 LENGTH = 640
 WIN = pygame.display.set_mode((LENGTH, LENGTH))
-pygame.display.set_caption("LD49 | > game title goes here <")
+pygame.display.set_caption("LD49: >> game title goes here <<")
 
 # PERFORMANCE
 FPS = 60
@@ -32,7 +32,7 @@ class SceneID(Enum):
 # --- Splash and Loading ---
 def splashscreen():
     clock = pygame.time.Clock()
-    time = int(1 * 1000)
+    time = int(10 * 1000)
 
     splashscreen = pygame.image.load(assets.Temp_Splashscreen).convert()
 
@@ -84,7 +84,7 @@ def mainloop():
         
         
 def draw_screen():
-    WIN.fill(colors.GREY)
+    WIN.fill(colors.BLACK)
 
     pygame.display.update()
 
