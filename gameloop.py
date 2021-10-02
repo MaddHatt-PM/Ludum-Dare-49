@@ -22,10 +22,9 @@ mixer.pre_init()
 pygame.init()
 
 # WINDOW SETUP
-LENGTH = 540
+LENGTH = 32*30
 WIN = pygame.display.set_mode((LENGTH, LENGTH))
 
-INTERNAL_LENGTH = 270
 pygame.display.set_caption("LD49: >> game title goes here <<")
 # pygame.mouse.set_visible(False)
 

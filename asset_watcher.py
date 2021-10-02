@@ -8,6 +8,7 @@ if (DO_RUN):
 
     graphic_files = [".png", ".jpg"]
     audio_files = [".wav", ".ogg"]
+    level_files = [".level"]
 
     filepaths = []
     folder = ""
@@ -18,6 +19,8 @@ if (DO_RUN):
                 folder = "Graphics"
             elif ('.' + asset.split('.')[-1] in audio_files):
                 folder = "Audio"
+            elif ('.' + asset.split('.')[-1] in level_files):
+                folder = "Levels"
             else:
                 continue
 
