@@ -1,30 +1,35 @@
-from enum import Enum, IntEnum
-
-class LayerIDs(IntEnum):
-    background = 0
-    entities = 10
-    foreground = 20
-    ui = 30
-
-class RenderLayers:
+class EntityManager:
     """ A python singleton """
 
     class __impl:
         """ Implementation of the singleton interface """
 
         def __init__(self) -> None:
-            self.layers = []
+            self.entities = []
+            self._deltaTime = 0.0
             
         def add(self, obj):
-            self.layers.append(obj)
+            self.entities.append(obj)
 
         def remove(self, obj):
-            if obj in self.layers:
-                self.layers.remove(obj)
+            if obj in self.entities:
+                self.entities.remove(obj)
+
+        def tick_all(self, deltaTime):
+            self._deltaTime = deltaTime
+            for entity in self.entities:
+                entity.tick()
 
         def output(self):
-            for item in self.layers:
+            for item in self.entities:
                 print(item.name)
+
+        def clear(self):
+            for item in self.entities:
+                item.destroy()
+
+        def deltatime(self):
+            return self._deltaTime
 
     # storage for the instance reference
     __instance = None
@@ -32,12 +37,12 @@ class RenderLayers:
     def __init__(self):
         """ Create singleton instance """
         # Check whether we already have an instance
-        if RenderLayers.__instance is None:
+        if EntityManager.__instance is None:
             # Create and remember instance
-            RenderLayers.__instance = RenderLayers.__impl()
+            EntityManager.__instance = EntityManager.__impl()
 
         # Store instance reference as the only member in the handle
-        self.__dict__['_Singleton__instance'] = RenderLayers.__instance
+        self.__dict__['_Singleton__instance'] = EntityManager.__instance
 
     def __getattr__(self, attr):
         """ Delegate access to implementation """

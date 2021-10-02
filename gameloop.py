@@ -1,6 +1,6 @@
 from typing import Collection
-from pygame.constants import QUIT
-from pygame import mixer
+from pygame.constants import KEYDOWN, MOUSEBUTTONDOWN, QUIT
+from pygame import Rect, mixer
 import pygame
 
 import sys
@@ -8,6 +8,10 @@ from enum import Enum, auto
 
 import assets
 import colors
+from entities import *
+from entity_manager import EntityManager
+from render_layers import *
+import utilities
 
 # ------------------------------------------------------
 # --- INITIAL SETUP ---
@@ -15,12 +19,16 @@ mixer.pre_init()
 pygame.init()
 
 # WINDOW SETUP
-LENGTH = 640
+LENGTH = 540
 WIN = pygame.display.set_mode((LENGTH, LENGTH))
+
+INTERNAL_LENGTH = 270
 pygame.display.set_caption("LD49: >> game title goes here <<")
+# pygame.mouse.set_visible(False)
 
 # PERFORMANCE
 FPS = 60
+
 
 # GAME STATES
 class SceneID(Enum):
@@ -32,7 +40,7 @@ class SceneID(Enum):
 # --- Splash and Loading ---
 def splashscreen():
     clock = pygame.time.Clock()
-    time = int(10 * 1000)
+    time = utilities.float_to_milli(1.5)
 
     splashscreen = pygame.image.load(assets.Temp_Splashscreen).convert()
 
@@ -61,35 +69,77 @@ def splashscreen():
 def mainloop():
     clock = pygame.time.Clock()
     is_running = True
-    active_scene = SceneID.mainmenu
+    active_scene = SceneID.game
+    deltatime = 0
+
+    cursor_go = cursor()
+
+    slimes = []
+    slimes.append(Slime("Bill", (200, 400)))
+    slimes.append(Slime("Jill", (400, 100)))
+    slimes.append(Slime("Mill", (100, 700)))
+    slimes.append(Slime("Zill", (100, 100)))
+    sel_slime_id = 0
+    slimes[sel_slime_id].is_selected = True
+    slimes[sel_slime_id].change_sel_graphic()
+
+    ice = IceBlock((270,270))
+    slimes[sel_slime_id].obtain_ice(ice)
+
+
+    entityManager = EntityManager()
 
     while is_running:
         clock.tick(FPS)
 
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == QUIT:
                 pygame.quit()
-                sys.exit()
+                sys.exit() 
 
         if (active_scene == SceneID.mainmenu):
             pass
         elif(active_scene == SceneID.game):
-            pass
+            for event in events:
+                
+                if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                    slimes[sel_slime_id].set_click_pos()
+
+                elif event.type == KEYDOWN and pygame.key.get_pressed()[pygame.K_SPACE]:
+                    slimes[sel_slime_id].select(False)
+
+                    sel_slime_id += 1
+                    if sel_slime_id == len(slimes):
+                        sel_slime_id = 0
+
+                    slimes[sel_slime_id].select(True)
+
+
 
         # User Input()
         # Collision()
-        # GameLogic()
         # Audio()
+
+        deltatime = clock.get_time() * 0.001
+        entityManager.tick_all(deltatime)
+
         draw_screen()
         
         
 def draw_screen():
     WIN.fill(colors.BLACK)
 
+    renderlayers = RenderLayers()
+    for item in renderlayers.layers:
+        if (item.do_draw):
+            WIN.blit(item.graphic, item.rect)
+
     pygame.display.update()
 
 
 # ------------------------------------------------------
-# --- Kickstarter ---
+# --- Starter ---
 if __name__ == "__main__":
-    splashscreen()
+    
+    mainloop()
