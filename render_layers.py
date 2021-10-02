@@ -16,6 +16,15 @@ class RenderLayers:
             self.layers = []
             
         def add(self, obj):
+            if (len(self.layers) == 0):
+                self.layers.append(obj)
+                return
+
+            for index in range(0, len(self.layers) - 1):
+                if (self.layers[index].draw_order >= obj.draw_order):
+                    self.layers.insert(index, obj)
+                    return
+            
             self.layers.append(obj)
 
         def remove(self, obj):

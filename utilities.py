@@ -5,6 +5,9 @@ import math
 def float_to_milli(input:float) -> int:
     return int(input * 1000)
 
+def milli_to_float(input:int) -> float:
+    return input * 0.001
+
 def clamp01(value):
     return max(0, min(value, 1))
 

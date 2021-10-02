@@ -7,6 +7,8 @@ class EntityManager:
         def __init__(self) -> None:
             self.entities = []
             self.ice_blocks = []
+            self.goals = []
+            self.collidables = []
             self._deltaTime = 0.0
             
         def add(self, obj):
@@ -15,18 +17,33 @@ class EntityManager:
         def remove(self, obj):
             if obj in self.entities:
                 self.entities.remove(obj)
+            
+            if obj in self.ice_blocks:
+                self.ice_blocks.remove(obj)
+
+            if obj in self.goals:
+                self.goals.remove(obj)
+
+            if obj in self.collidables:
+                self.collidables.remove(obj)
 
         def add_ice(self, obj):
             self.ice_blocks.append(obj)
 
-        def remove_ice(self, obj):
-            if obj in self.ice_blocks:
-                self.ice_blocks.remove(obj)
+        def add_collidable(self, obj):
+            self.collidables.append(obj)
+
+        def add_goal(self, obj):
+            self.goals.append(obj)
+
+        def remove_goal(self, obj):
+            self.goals
 
         def tick_all(self, deltaTime):
             self._deltaTime = deltaTime
             for entity in self.entities:
-                entity.tick()
+                if entity.enabled:
+                    entity.tick()
 
         def output(self):
             for item in self.entities:
@@ -38,6 +55,16 @@ class EntityManager:
 
         def deltatime(self):
             return self._deltaTime
+
+        def is_level_completed(self):
+            if len(self.goals) == 0:
+                return False
+
+            for goal in self.goals:
+                if goal.is_completed == False:
+                    return False
+
+            return True
 
     # storage for the instance reference
     __instance = None

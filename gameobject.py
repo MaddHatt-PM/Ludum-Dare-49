@@ -10,6 +10,7 @@ class GameObject:
         self.__isDirty = True
         self.graphic = graphic
         self.rect = Rect(position[0], position[1], graphic.get_width(), graphic.get_height())
+        self.draw_order = draw_order
 
         self.renderer = RenderLayers()
         self.renderer.add(self)
@@ -18,7 +19,7 @@ class GameObject:
         self.entitymanager.add(self)
 
         self.collision_tracker = []
-        self.is_ice_block = False
+        self.enabled = True
 
     def destroy(self):
         self.renderer.remove(self)
@@ -56,6 +57,6 @@ class GameObject:
     def check_collision(self, collider:pygame.Rect) -> bool:
         return self.rect.colliderect(collider) and collider not in self.collision_tracker
 
-    def do_draw(self, surface: Surface):
-        return True
+    def do_draw(self):
+        return self.enabled
         # return self.__isDirty and self.graphic != None
