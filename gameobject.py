@@ -18,6 +18,7 @@ class GameObject:
         self.entitymanager.add(self)
 
         self.collision_tracker = []
+        self.is_ice_block = False
 
     def destroy(self):
         self.renderer.remove(self)

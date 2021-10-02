@@ -21,22 +21,31 @@ class cursor(GameObject):
 class IceBlock(GameObject):
     def __init__(self, position:Tuple[float, float]):
         self.spawn_pos = position
-        self.health = 100.0
+        self.default_melt_time = 12
+        self.curr_melt_time = self.default_melt_time
         self.obtained = False
         graphic = pygame.image.load(assets.IceBlock).convert_alpha()
         super().__init__("Ice Block", graphic, position, LayerIDs.entities, draw_order=30)
+        self.entitymanager.add_ice(obj=self)
 
     def reset(self):
+        self.curr_melt_time = self.default_melt_time
         self.set_position(self.spawn_pos)
         self.obtained = False
 
+    def destroy(self):
+        self.entitymanager.remove_ice(obj=self)
+        return super().destroy()
 
+    def tick(self):
+        print(self.curr_melt_time)
+        return super().tick()
 
 class Slime(GameObject):
     def __init__(self, name:str, position:Tuple[float, float]):
         self.click_pos = position
         self.ice_block = None
-        self.is_selected = True
+        self.is_selected = False
         self.startpos = position
         self.move_time_max = 0.0001
         self.move_time_curr = 0.0001
@@ -73,14 +82,25 @@ class Slime(GameObject):
             if self.move_time_max != 0:
                 self.set_position (utilities.berp_position(self.startpos, self.click_pos, self.move_time_curr / self.move_time_max))
 
+            # move ice around
+            actively_moving = 0.8 > (self.move_time_curr / self.move_time_max) 
             if (self.ice_block is not None):
-                self.ice_block.health -= 1
                 self.ice_block.set_position(self.get_position())
 
-                if (self.ice_block.health < 0):
-                    print("ice has died")
-                    self.ice_block.reset()
-                    self.ice_block = None
-
+                # handle ice melting
+                if (actively_moving == True):
+                    self.ice_block.curr_melt_time -= self.entitymanager.deltatime()
+                    if (self.ice_block.curr_melt_time < 0):
+                        print("ice has died")
+                        self.ice_block.reset()
+                        self.ice_block = None
+            
+            # Check if close enough to any ice blocks
+            else:
+                if self.is_selected == True:
+                    for ice in self.entitymanager.ice_blocks:
+                        if ice.obtained == False:
+                            if self.check_collision(ice.rect):
+                                self.obtain_ice(ice)
 
 

@@ -6,6 +6,7 @@ class EntityManager:
 
         def __init__(self) -> None:
             self.entities = []
+            self.ice_blocks = []
             self._deltaTime = 0.0
             
         def add(self, obj):
@@ -14,6 +15,13 @@ class EntityManager:
         def remove(self, obj):
             if obj in self.entities:
                 self.entities.remove(obj)
+
+        def add_ice(self, obj):
+            self.ice_blocks.append(obj)
+
+        def remove_ice(self, obj):
+            if obj in self.ice_blocks:
+                self.ice_blocks.remove(obj)
 
         def tick_all(self, deltaTime):
             self._deltaTime = deltaTime

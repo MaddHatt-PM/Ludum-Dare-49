@@ -77,14 +77,13 @@ def mainloop():
     slimes = []
     slimes.append(Slime("Bill", (200, 400)))
     slimes.append(Slime("Jill", (400, 100)))
-    slimes.append(Slime("Mill", (100, 700)))
+    slimes.append(Slime("Mill", (100, 300)))
     slimes.append(Slime("Zill", (100, 100)))
     sel_slime_id = 0
     slimes[sel_slime_id].is_selected = True
     slimes[sel_slime_id].change_sel_graphic()
 
     ice = IceBlock((270,270))
-    slimes[sel_slime_id].obtain_ice(ice)
 
 
     entityManager = EntityManager()
@@ -123,6 +122,7 @@ def mainloop():
 
         deltatime = clock.get_time() * 0.001
         entityManager.tick_all(deltatime)
+        print(len(entityManager.ice_blocks))
 
         draw_screen()
         
