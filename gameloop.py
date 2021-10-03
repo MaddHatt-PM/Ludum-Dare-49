@@ -31,12 +31,16 @@ pygame.display.set_caption("LD49: >> game title goes here <<")
 # PERFORMANCE
 FPS = 60
 
-
 # GAME STATES
 class SceneID(Enum):
     splash = auto()
     mainmenu = auto()
     game = auto()
+
+# Level Data
+levels = [
+    assets.
+]
 
 # ------------------------------------------------------
 # --- Splash and Loading ---
