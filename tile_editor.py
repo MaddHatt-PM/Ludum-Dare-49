@@ -232,6 +232,7 @@ def start_editor(tileData:TileData):
         sel_index = position_to_tileID(pygame.mouse.get_pos())
         WIN.blit(cursor_gfx, tileindex_to_tileRect(sel_index))
 
+        
         tileID_text = font.render(selected_tileID.name,False, colors.WHITE, colors.BACKGROUND)
         textID_rect = tileID_text.get_rect()
         textID_rect.x += pygame.mouse.get_pos()[0] + 13

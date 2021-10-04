@@ -4,6 +4,8 @@ class EntityManager:
     class __impl:
         """ Implementation of the singleton interface """
 
+        add_time = False
+
         def __init__(self) -> None:
             self.entities = []
             self.ice_blocks = []
@@ -78,6 +80,9 @@ class EntityManager:
 
         # Store instance reference as the only member in the handle
         self.__dict__['_Singleton__instance'] = EntityManager.__instance
+
+    def reload(self):
+        __instance = EntityManager.__impl()
 
     def __getattr__(self, attr):
         """ Delegate access to implementation """

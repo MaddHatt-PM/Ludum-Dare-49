@@ -20,6 +20,7 @@ class TileID(Enum):
     Wall_bl = "Wall_bl"
     Wall_bm = "Wall_bm"
     Wall_br = "Wall_br"
+    reactor = "reactor"
 
 def int_to_TileID(input:int) -> TileID:
     if input == 0:
@@ -94,23 +95,23 @@ def TileID_to_gfx_path(input:TileID) -> str:
     if input == TileID.Wall:
         return assets.Wall
     if input == TileID.Wall_tl:
-        return assets.Wall_00
+        return assets.Wall_tl
     if input == TileID.Wall_tm:
-        return assets.Wall_01
+        return assets.Wall_tm
     if input == TileID.Wall_tr:
-        return assets.Wall_02
+        return assets.Wall_tr
     if input == TileID.Wall_ml:
-        return assets.Wall_10
+        return assets.Wall_ml
     if input == TileID.Floor:
         return assets.Floor
     if input == TileID.Wall_mr:
-        return  assets.Wall_12
+        return  assets.Wall_mr
     if input == TileID.Wall_bl:
-        return  assets.Wall_20
+        return  assets.Wall_bl
     if input == TileID.Wall_bm:
-        return  assets.Wall_21
+        return  assets.Wall_bm
     if input == TileID.Wall_br:
-        return  assets.Wall_22
+        return  assets.Wall_br
 
 class tileID_gfx():
     def __init__(self, path:str, tileID:TileID, has_alpha=True) -> None:

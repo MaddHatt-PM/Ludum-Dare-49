@@ -1,7 +1,8 @@
 from typing import Collection
-from pygame.constants import KEYDOWN, MOUSEBUTTONDOWN, QUIT
+from pygame.constants import KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP, QUIT
 from pygame import Rect, mixer
 import pygame
+import subprocess
 
 import os, sys
 from enum import Enum, auto
@@ -28,11 +29,13 @@ pygame.init()
 LENGTH = 32*30
 WIN = pygame.display.set_mode((LENGTH, LENGTH))
 
-pygame.display.set_caption("LD49: >> game title goes here <<")
+pygame.display.set_caption("LDJam 49: Nuclear Home")
+pygame.display.set_icon(pygame.image.load(assets.Timer_F01))
 # pygame.mouse.set_visible(False)
 
 # PERFORMANCE
 FPS = 60
+
 
 # GAME STATES
 class SceneID(Enum):
@@ -41,6 +44,8 @@ class SceneID(Enum):
     game = auto()
 
 # Level Data
+GAMETIME = 60.0
+ADDITIONAL_TIME = 10.0
 levelfiles = [
     assets.DemoLevel,
 ]
@@ -49,7 +54,7 @@ levelfiles = [
 # --- Splash and Loading ---
 def splashscreen():
     clock = pygame.time.Clock()
-    time = utilities.float_to_milli(1.5)
+    time = utilities.float_to_milli(0.5)
 
     splashscreen = pygame.image.load(assets.Temp_Splashscreen).convert()
 
@@ -70,7 +75,8 @@ def splashscreen():
         WIN.blit(splashscreen, (0,0))
         pygame.display.update()
 
-    mainloop()
+    while True:
+        mainloop()
         
 
 # ------------------------------------------------------
@@ -78,32 +84,70 @@ def splashscreen():
 def mainloop():
     clock = pygame.time.Clock()
     is_running = True
-    active_scene = SceneID.game
+    active_scene = SceneID.mainmenu
     entityManager = EntityManager()
     deltatime = 0
 
     cursor_go = Cursor()
-
-    # Level Scripting to be replaced later
     slimes = []
-    # slimes.append(Slime("Bill", (200, 400)))
-    # slimes.append(Slime("Jill", (400, 100)))
-    # slimes.append(Slime("Mill", (100, 300)))
-    # slimes.append(Slime("Zill", (100, 100)))
+
+    # LEVEL LOADER
+    floortile = pygame.image.load(assets.Floor).convert()
+    Wall_tl_tile = pygame.image.load(assets.Wall_tl).convert()
+    Wall_tm_tile = pygame.image.load(assets.Wall_tm).convert()
+    Wall_tr_tile = pygame.image.load(assets.Wall_tr).convert()
+    Wall_ml_tile = pygame.image.load(assets.Wall_ml).convert()
+    Wall_mr_tile = pygame.image.load(assets.Wall_mr).convert()
+    Wall_bl_tile = pygame.image.load(assets.Wall_bl).convert()
+    Wall_bm_tile = pygame.image.load(assets.Wall_bm).convert()
+    Wall_br_tile = pygame.image.load(assets.Wall_br).convert()
 
     tileData = TileData(levelfiles[0])
     for layer in tileData.leveldata:
         for id in range(0, len(layer)):
+            position = tileindex_to_tileRect(id).topleft
+
+            if layer[id] == TileID.Wall_tl:
+                Wall(position, Wall_tl_tile)
+            if layer[id] == TileID.Wall_tm:
+                Wall(position, Wall_tm_tile)
+            if layer[id] == TileID.Wall_tr:
+                Wall(position, Wall_tr_tile)
+            if layer[id] == TileID.Wall_ml:
+                Wall(position, Wall_ml_tile)
+            if layer[id] == TileID.Wall_mr:
+                Wall(position, Wall_mr_tile)
+            if layer[id] == TileID.Wall_bl:
+                Wall(position, Wall_bl_tile)
+            if layer[id] == TileID.Wall_bm:
+                Wall(position, Wall_bm_tile)
+            if layer[id] == TileID.Wall_br:
+                Wall(position, Wall_br_tile)
+            if layer[id] == TileID.Floor:
+                GameObject("", floortile, position, LayerIDs.background, -100)
             if layer[id] == TileID.Slime:
-                slimes.append(Slime("", tileindex_to_tileRect(id).topleft))
+                slimes.append(Slime("", position))
+            if layer[id] == TileID.Ice:
+                IceBlock(position)
+            if layer[id] == TileID.Goal:
+                print("asdbjkasd")
+                GoalArea("", position)
+
+    scr_gameover = pygame.image.load(assets.GameOver).convert()
+    scr_youwin = pygame.image.load(assets.YouWin).convert()
+    scr_mainmenu = pygame.image.load(assets.MainMenu).convert()
+
+    gfx_playbutton_normal = pygame.image.load(assets.PlayButton).convert_alpha()
+    gfx_playbutton_hover = pygame.image.load(assets.PlayButton_hover).convert_alpha()
+    gfx_playbutton_pressed = pygame.image.load(assets.PlayButton_pressed).convert_alpha()
+    ui_playbutton = gfx_playbutton_normal
 
     sel_slime_id = 0
     slimes[sel_slime_id].select()
 
     ui_counter = UICounter()
 
-    countdown = 60.0
-    font = pygame.font.SysFont('consolas', 12)
+    countdown = GAMETIME
 
     while is_running:
         clock.tick(FPS)
@@ -115,7 +159,26 @@ def mainloop():
                 sys.exit() 
 
         if (active_scene == SceneID.mainmenu):
-                pass
+            WIN.fill(colors.BACKGROUND)
+            WIN.blit(scr_mainmenu, scr_mainmenu.get_rect())
+
+            ui_playbutton = gfx_playbutton_normal
+            play_rect = ui_playbutton.get_rect()
+            play_rect.center = ( LENGTH // 2, 580 )
+            if play_rect.collidepoint(pygame.mouse.get_pos()):
+                ui_playbutton = gfx_playbutton_hover
+                for event in events:
+                    if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                        ui_playbutton = gfx_playbutton_pressed
+
+                    if event.type == MOUSEBUTTONUP and event.button == 1:
+                        active_scene = SceneID.game
+            else:
+                ui_playbutton = gfx_playbutton_normal
+            WIN.blit(ui_playbutton, play_rect)
+
+            pygame.display.update()
+
         elif(active_scene == SceneID.game):
                 for event in events:
                 
@@ -134,40 +197,62 @@ def mainloop():
                 deltatime = utilities.milli_to_float(clock.get_time())
                 entityManager.tick_all(deltatime)
     
+
+                draw_gameobjects()
+
+                if entityManager.add_time == True:
+                    entityManager.add_time = False
+                    countdown += ADDITIONAL_TIME
+
                 # Win State
                 if entityManager.is_level_completed() is True:
-                    # Add next level loading here
-                    print("Do win state stuff")
-
+                    WIN.fill(colors.BACKGROUND)
+                    WIN.blit(scr_youwin, scr_youwin.get_rect())
+                    
                 # Lose State
                 else:
                     countdown -= deltatime
                     if countdown < 0.0:
-                        # pass
-                        print("You lose")
+                        WIN.fill(colors.BACKGROUND)
+                        WIN.blit(scr_gameover, scr_gameover.get_rect())
 
-        # Audio()
+                        ui_playbutton = gfx_playbutton_normal
+                        play_rect = ui_playbutton.get_rect()
+                        play_rect.center = ( LENGTH // 2, 580 )
+                        if play_rect.collidepoint(pygame.mouse.get_pos()):
+                            ui_playbutton = gfx_playbutton_hover
+                            for event in events:
+                                if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                                    ui_playbutton = gfx_playbutton_pressed
 
-        draw_screen()
-        countdown_text = font.render("{:.2f}".format(countdown), False, colors.WHITE)
-        # WIN.blit(countdown_text, (( LENGTH // 2 - countdown_text.get_width() // 2, 0) , countdown_text.get_rect().size))
-        
-        ui = ui_counter.get_render_ui(WIN.get_size(), countdown)
-        for item in ui:
-            WIN.blit(item[0], item[1])
+                                if event.type == MOUSEBUTTONUP and event.button == 1:
+                                    entityManager.clear()
+                                    RenderLayers().clear()
+                                    entityManager.reload()
+                                    RenderLayers().reload()
+                                    gc.collect()
+                                    return
+                        else:
+                            ui_playbutton = gfx_playbutton_normal
+                        WIN.blit(ui_playbutton, play_rect)
 
-        pygame.display.update()
+                ui = ui_counter.get_render_ui(WIN.get_size(), countdown)
+                for item in ui:
+                    WIN.blit(item[0], item[1])
+
+                pygame.display.update()
         
 
 slime_selector = pygame.image.load(assets.Slime_Selector).convert_alpha()
 
-def draw_screen():
+def draw_gameobjects():
     WIN.fill(colors.BACKGROUND)
 
     renderlayers = RenderLayers()
     for item in renderlayers.layers:
         if (item.do_draw()):
             WIN.blit(item.graphic, item.rect)
+
             if type(item) is Slime and item.is_selected:
                 WIN.blit(slime_selector, item.rect)
 
@@ -175,4 +260,4 @@ def draw_screen():
 # ------------------------------------------------------
 # --- Starter ---
 if __name__ == "__main__":
-    mainloop()
+    splashscreen()

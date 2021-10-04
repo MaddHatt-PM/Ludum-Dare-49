@@ -32,6 +32,7 @@ class UICounter():
         if "7" == input: return self.ui_num_7
         if "8" == input: return self.ui_num_8
         if "9" == input: return self.ui_num_9
+        return self.ui_num_0
 
     def get_render_ui(self, windowsize:Tuple[int, int], counter:float):
         window_center = windowsize[0] // 2
@@ -49,9 +50,11 @@ class UICounter():
         else:
             returnable.append ( (self.Timer_F02, timer_rect) )
 
+        # try:
         charwidth = 35
         start_x = window_center - charwidth * 2 + 18
-        text = "{:.1f}".format(counter)
+        if counter < 0.0: counter = 0.0
+        text = "{:04.1f}".format(counter)
         count = 0
         for char in text:
             charRect = self.char_to_num(char).get_rect()
@@ -62,6 +65,8 @@ class UICounter():
 
             returnable.append ( (self.char_to_num(char), charRect) )
             count += 1
+        # except:
+        #     print("can't get rect of NoneType")
 
 
         flavor_rect = self.ui_flavor.get_rect()

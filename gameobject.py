@@ -21,6 +21,8 @@ class GameObject:
         self.collision_tracker = []
         self.enabled = True
 
+    
+
     def destroy(self):
         self.renderer.remove(self)
         self.entitymanager.remove(self)

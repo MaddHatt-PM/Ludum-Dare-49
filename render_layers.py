@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum
+import gc
 
 class LayerIDs(IntEnum):
     background = 0
@@ -35,6 +36,12 @@ class RenderLayers:
             for item in self.layers:
                 print(item.name)
 
+        def clear(self):
+            for item in self.layers:
+                del item
+            self.layers.clear()
+
+
     # storage for the instance reference
     __instance = None
 
@@ -47,6 +54,9 @@ class RenderLayers:
 
         # Store instance reference as the only member in the handle
         self.__dict__['_Singleton__instance'] = RenderLayers.__instance
+
+    def reload(self):
+        __instance = RenderLayers.__impl()
 
     def __getattr__(self, attr):
         """ Delegate access to implementation """
