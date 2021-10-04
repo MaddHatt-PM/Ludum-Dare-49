@@ -13,6 +13,9 @@ import colors
 from entities import *
 from entity_manager import EntityManager
 from render_layers import *
+from tileID import TileID
+from tile_editor import TileData, tileindex_to_tileRect
+from uicounter import UICounter
 import utilities
 
 # ------------------------------------------------------
@@ -38,8 +41,8 @@ class SceneID(Enum):
     game = auto()
 
 # Level Data
-levels = [
-    assets.
+levelfiles = [
+    assets.DemoLevel,
 ]
 
 # ------------------------------------------------------
@@ -83,22 +86,21 @@ def mainloop():
 
     # Level Scripting to be replaced later
     slimes = []
-    slimes.append(Slime("Bill", (200, 400)))
-    slimes.append(Slime("Jill", (400, 100)))
-    slimes.append(Slime("Mill", (100, 300)))
-    slimes.append(Slime("Zill", (100, 100)))
+    # slimes.append(Slime("Bill", (200, 400)))
+    # slimes.append(Slime("Jill", (400, 100)))
+    # slimes.append(Slime("Mill", (100, 300)))
+    # slimes.append(Slime("Zill", (100, 100)))
+
+    tileData = TileData(levelfiles[0])
+    for layer in tileData.leveldata:
+        for id in range(0, len(layer)):
+            if layer[id] == TileID.Slime:
+                slimes.append(Slime("", tileindex_to_tileRect(id).topleft))
 
     sel_slime_id = 0
-    slimes[sel_slime_id].is_selected = True
-    slimes[sel_slime_id].change_sel_graphic()
+    slimes[sel_slime_id].select()
 
-    wall = Wall((180, 180))
-
-    ice = IceBlock((270,270))
-    ice = IceBlock((270,370))
-
-    goal = GoalArea("goal a", (400,400))
-    goal = GoalArea("goal b", (0,0))
+    ui_counter = UICounter()
 
     countdown = 60.0
     font = pygame.font.SysFont('consolas', 12)
@@ -112,10 +114,9 @@ def mainloop():
                 pygame.quit()
                 sys.exit() 
 
-        if (get_focused()):
-            if (active_scene == SceneID.mainmenu):
+        if (active_scene == SceneID.mainmenu):
                 pass
-            elif(active_scene == SceneID.game):
+        elif(active_scene == SceneID.game):
                 for event in events:
                 
                     if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -149,19 +150,26 @@ def mainloop():
 
         draw_screen()
         countdown_text = font.render("{:.2f}".format(countdown), False, colors.WHITE)
-        WIN.blit(countdown_text, (( LENGTH // 2 - countdown_text.get_width() // 2, 0) , countdown_text.get_rect().size))
+        # WIN.blit(countdown_text, (( LENGTH // 2 - countdown_text.get_width() // 2, 0) , countdown_text.get_rect().size))
+        
+        ui = ui_counter.get_render_ui(WIN.get_size(), countdown)
+        for item in ui:
+            WIN.blit(item[0], item[1])
+
         pygame.display.update()
         
-        
+
+slime_selector = pygame.image.load(assets.Slime_Selector).convert_alpha()
+
 def draw_screen():
-    WIN.fill(colors.BLACK)
+    WIN.fill(colors.BACKGROUND)
 
     renderlayers = RenderLayers()
     for item in renderlayers.layers:
         if (item.do_draw()):
             WIN.blit(item.graphic, item.rect)
-
-    pygame.display.update()
+            if type(item) is Slime and item.is_selected:
+                WIN.blit(slime_selector, item.rect)
 
 
 # ------------------------------------------------------

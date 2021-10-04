@@ -1,5 +1,5 @@
 import pickle
-from tileID import TileID
+from tileID import TileID, TileID_to_gfx_path, TileID_to_int, int_to_TileID, tileID_gfx
 import tileID
 import os, os.path
 import json
@@ -124,12 +124,30 @@ def start_editor(tileData:TileData):
     slime_gfx = pygame.image.load(assets.Slime).convert_alpha()
     cursor_gfx = pygame.image.load(assets.edit_cursor).convert_alpha()
 
+    tile_graphics = [
+        tileID_gfx(TileID_to_gfx_path(TileID.Empty), TileID.Empty),
+        tileID_gfx(TileID_to_gfx_path(TileID.Slime), TileID.Slime, True),
+        tileID_gfx(TileID_to_gfx_path(TileID.Ice), TileID.Ice, True),
+        tileID_gfx(TileID_to_gfx_path(TileID.Goal), TileID.Goal, True),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall), TileID.Wall),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_tl), TileID.Wall_tl),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_tm), TileID.Wall_tm),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_tr), TileID.Wall_tr),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_ml), TileID.Wall_ml),
+        tileID_gfx(TileID_to_gfx_path(TileID.Floor), TileID.Floor),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_mr), TileID.Wall_mr),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_bl), TileID.Wall_bl),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_bm), TileID.Wall_bm),
+        tileID_gfx(TileID_to_gfx_path(TileID.Wall_br), TileID.Wall_br)
+    ]
     
     font = pygame.font.SysFont('consolas', 12)
     selected_tileID = TileID.Slime
     clock = pygame.time.Clock()
     isSaving = False
+    isErasing = False
     isPainting = False
+    drawAllLayers = False
 
     while True:
         # clock.tick(FPS)
@@ -146,7 +164,7 @@ def start_editor(tileData:TileData):
                 pygame.display.update()
 
                 clock.tick(FPS)
-                pygame.time.wait(1000)
+                pygame.time.wait(10)
 
                 pygame.quit()
                 sys.exit()
@@ -156,10 +174,19 @@ def start_editor(tileData:TileData):
                     tileData.selectedLayer += 1
                     if tileData.selectedLayer == len(tileData.leveldata):
                         tileData.selectedLayer = 0
+                if event.key == pygame.K_SPACE:
+                    drawAllLayers = not drawAllLayers
             
             if (event.type == MOUSEBUTTONDOWN):
                 if (event.button == 1):
                     isPainting = True
+
+                if (event.button == 2):
+                    isErasing = True
+
+                if (event.button == 3):
+                    sel_index = position_to_tileID(pygame.mouse.get_pos())
+                    selected_tileID = tileData.leveldata[tileData.selectedLayer][sel_index]
 
                 # Mouse scroll down
                 if (event.button == 4):
@@ -173,28 +200,46 @@ def start_editor(tileData:TileData):
                 if (event.button == 1):
                     isPainting = False
 
+                if (event.button == 2):
+                    isErasing = False
+
+        if (isErasing == True):
+            sel_index = position_to_tileID(pygame.mouse.get_pos())
+            tileData.leveldata[tileData.selectedLayer][sel_index] = TileID.Empty
+
         if (isPainting == True):
             sel_index = position_to_tileID(pygame.mouse.get_pos())
             tileData.leveldata[tileData.selectedLayer][sel_index] = selected_tileID
 
 
-        layer = tileData.leveldata[tileData.selectedLayer]
-        for tileID in range(0, len(layer)):
-            if layer[tileID] != TileID.Empty:
-                WIN.blit(slime_gfx, tileindex_to_tileRect(tileID))
+        if (drawAllLayers is False):
+            render_layers = [tileData.leveldata[tileData.selectedLayer]]
+        else:
+            render_layers = [
+                tileData.leveldata[0],
+                tileData.leveldata[1],
+                tileData.leveldata[2]
+            ]
+
+        for layer in render_layers:
+            for tileID in range(0, len(layer)):
+                if layer[tileID] != TileID.Empty:
+                    sel_gfx = tile_graphics[TileID_to_int(layer[tileID])]
+                    WIN.blit(sel_gfx.get_gfx(), tileindex_to_tileRect(tileID))
+            
 
         # draw cursor
         sel_index = position_to_tileID(pygame.mouse.get_pos())
         WIN.blit(cursor_gfx, tileindex_to_tileRect(sel_index))
 
-        tileID_text = font.render(selected_tileID.name,False, colors.WHITE, colors.BLACK)
+        tileID_text = font.render(selected_tileID.name,False, colors.WHITE, colors.BACKGROUND)
         textID_rect = tileID_text.get_rect()
         textID_rect.x += pygame.mouse.get_pos()[0] + 13
         textID_rect.y += pygame.mouse.get_pos()[1] + 10
         WIN.blit(tileID_text, textID_rect)
 
         # draw layer menu
-        layer_info = "Press tab to cycle draw layers:\n"
+        layer_info = "Press tab to cycle draw layers:"
         layer_text = font.render(layer_info, False, colors.WHITE)
         layer_rect = layer_text.get_rect()
         layer_rect.x += 5
@@ -216,9 +261,4 @@ def start_editor(tileData:TileData):
             layer_rect.y += addable_height
             WIN.blit(layer_text, layer_rect)
 
-
-
         pygame.display.update()
-
-        
-start_editor(load())

@@ -75,24 +75,22 @@ class Slime(GameObject):
         self.startpos = position
         self.move_time_max = 0.0001
         self.move_time_curr = 0.0001
-        self.graphic_sel = pygame.image.load(assets.Slime_Active).convert_alpha()
-        self.graphic_unsel = pygame.image.load(assets.Slime_Deactive).convert_alpha()
-        super().__init__(name, self.graphic_unsel, position, LayerIDs.entities, 15)
+        self.gfx_normal = pygame.image.load(assets.Slime_Normal).convert_alpha()
+        self.gfx_iced = pygame.image.load(assets.Slime_Iced).convert_alpha()
+        super().__init__(name, self.gfx_normal, position, LayerIDs.entities, 15)
     
-    def select(self, state:bool):
+    def select(self, state=True):
         self.is_selected = state
         self.change_sel_graphic()
 
     def change_sel_graphic(self):
         if self.is_selected is True:
-            self.graphic = self.graphic_sel
-        else:
-            self.graphic = self.graphic_unsel
+            self.graphic = self.gfx_normal
 
     def obtain_ice(self, ice:IceBlock):
         if (ice.obtained is False):
             self.ice_block = ice
-            self.ice_block.obtained
+            self.graphic = self.gfx_iced
 
     def set_click_pos(self, pos=None):
         SPEED = 120.0
@@ -137,14 +135,14 @@ class Slime(GameObject):
             # move ice around
             actively_moving = self.move_time_max != 0 and 0.8 > (self.move_time_curr / self.move_time_max) 
             if (self.ice_block is not None):
-                print("I have ice")
                 self.ice_block.set_position(self.get_position())
 
                 # handle goal point
                 for goal in self.entitymanager.goals:
                     if goal.is_completed == False and self.rect.colliderect(goal.rect):
                         self.ice_block.enabled = False
-                        self.ice_block = None
+                        self.ice_block = None            
+                        self.graphic = self.gfx_normal
                         goal.set_completed()
                         return
 
@@ -152,7 +150,8 @@ class Slime(GameObject):
                 if (actively_moving == True):
                     self.ice_block.curr_melt_time -= self.entitymanager.deltatime()
                     if (self.ice_block.curr_melt_time < 0):
-                        print("ice has died")
+                        print("ice has died")   
+                        self.graphic = self.gfx_normal
                         self.ice_block.reset()
                         self.ice_block = None
             
@@ -163,5 +162,3 @@ class Slime(GameObject):
                         if ice.obtained == False and ice.enabled == True:
                             if self.check_collision(ice.rect):
                                 self.obtain_ice(ice)
-
-
