@@ -36,7 +36,6 @@ pygame.display.set_icon(pygame.image.load(assets.Timer_F01))
 # PERFORMANCE
 FPS = 60
 
-
 # GAME STATES
 class SceneID(Enum):
     splash = auto()
@@ -44,8 +43,8 @@ class SceneID(Enum):
     game = auto()
 
 # Level Data
-GAMETIME = 60.0
-ADDITIONAL_TIME = 10.0
+GAMETIME = 45.0
+ADDITIONAL_TIME = 5.0
 levelfiles = [
     assets.DemoLevel,
 ]
@@ -60,7 +59,7 @@ def splashscreen():
 
     # Play test sound
     mixer.music.load(assets.Temp_SoundTest)
-    mixer.music.set_volume(0.25)
+    mixer.music.set_volume(0.75)
     mixer.music.play()
 
     while time > 0:

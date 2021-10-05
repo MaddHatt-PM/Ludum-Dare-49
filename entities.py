@@ -29,7 +29,7 @@ class Cursor(GameObject):
 class IceBlock(GameObject):
     def __init__(self, position:Tuple[float, float]):
         self.spawn_pos = position
-        self.default_melt_time = 12
+        self.default_melt_time = 1000
         self.curr_melt_time = self.default_melt_time
         self.obtained = False
         self.is_ice_block = True
@@ -159,6 +159,7 @@ class Slime(GameObject):
                         self.ice_block = None            
                         self.graphic = self.gfx_normal
                         goal.set_completed()
+                        self.enabled = False
                         return
 
                 # handle ice melting from movement
